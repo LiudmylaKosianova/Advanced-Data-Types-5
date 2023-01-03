@@ -534,3 +534,172 @@ while (ptr!= NULL){
 ptr = ptr->next;}
 
 return count;}
+
+/*
+TASK 7
+In this task you will again work with the linked list of digits we created during the lessons up to this point. 
+
+You are provided with (but are not required to use) the functions and prototypes we have written so far. You are also provided with a main() function to test your code. Please do not modify this main() function.
+
+Your task is to write a new function countRedun() which takes as input a pointer that holds the address of the start of a linked list of digits. Your function should count how many redundancies can be observed in the number stored in this list and return this count of redundancies. A redundancy is a digit which has previously already occurred in the number. For example, in the number 39534, the second '3' is a redundancy.
+*/ 
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct digit {
+    int num;
+    struct digit *next;
+};
+
+
+// Add a prototype for countRedun() here
+
+int countRedun(struct digit * start);
+struct digit * sortedCopy(struct digit * start);
+struct digit * insertAtFront(struct digit * start, struct digit * newptr);
+struct digit * insertIntoSorted(struct digit *start, struct digit *newDig);
+
+struct digit * createDigit(int);
+struct digit * append(struct digit * end, struct digit * newDigptr);
+void printNumber(struct digit *);
+void freeNumber(struct digit *);
+struct digit *readNumber(void); 
+ 
+
+
+// Do not modify this main() function
+int main(void) {
+    struct digit *start;
+    start = readNumber();
+
+    printf("The number ");
+    printNumber(start);
+    printf("contains %d redundancies.\n", countRedun(start));
+
+    freeNumber(start);
+
+    return 0;
+}
+
+struct digit *createDigit(int dig) {
+    struct digit *ptr;
+    ptr = (struct digit *) malloc(sizeof(struct digit));
+    ptr->num = dig;
+    ptr->next = NULL;
+    return ptr;
+}
+
+struct digit * append(struct digit * end, struct digit * newDigptr) {
+    end->next = newDigptr;
+    return(end->next);
+}
+
+void printNumber(struct digit *start) {
+    struct digit * ptr = start;
+    while (ptr!=NULL) {
+        printf("%d", ptr->num);
+        ptr = ptr->next;
+    }
+    printf("\n");
+}
+
+void freeNumber(struct digit *start) {
+    struct digit * ptr = start;
+    struct digit * tmp;
+    while (ptr!=NULL) {
+        tmp = ptr->next;
+        free(ptr);
+        ptr = tmp;
+    }
+}
+
+struct digit *readNumber(void) {
+    char c;
+    int d;
+    struct digit *start, *end, *newptr;
+    start = NULL;
+    scanf("%c", &c);
+    while (c != '\n') {
+        d = c-48;
+        newptr = createDigit(d);
+        if (start == NULL) {
+            start = newptr;
+            end = start;
+        } else {
+            end = append(end, newptr);
+        }
+        scanf("%c", &c);
+    }
+    return(start);
+}
+
+
+/*I have used the sortedCopy(), insertAtFront() and insertIntoSorted() from the lecture
+to sort the linked list*/
+struct digit * insertIntoSorted(struct digit *start, struct digit *newDig) {
+    struct digit *ptr = start;
+    struct digit *prev = NULL;
+    while ((ptr!=NULL) && (ptr->num < newDig->num)) {
+        prev = ptr;
+        ptr = ptr->next;
+    }
+    if (prev == NULL) {
+        start = insertAtFront(start, newDig);
+    } else {
+        prev->next = newDig;
+        newDig->next = ptr;
+    }
+    return(start);
+}
+
+
+struct digit * insertAtFront(struct digit * start, struct digit * newptr) {
+    newptr->next = start;
+    return(newptr);
+}
+
+
+struct digit * sortedCopy(struct digit * start) {
+     
+    struct digit *ptr = start;
+    struct digit *sortedStart = NULL;
+    struct digit *newDigit;
+    
+    if (start!=NULL) {
+        sortedStart = createDigit(start->num);
+        ptr = ptr->next;
+    }
+    while (ptr!=NULL) {
+        newDigit = createDigit(ptr->num);
+        sortedStart = insertIntoSorted(sortedStart, newDigit);
+        ptr = ptr->next;
+    }
+    return(sortedStart);
+}
+
+// Write your countRedun() function here
+int countRedun(struct digit * start){
+//I will create a temporary copy of start
+struct digit * ptr = start;
+
+//I will sort this new linked list
+ptr = sortedCopy(ptr);
+
+ 
+//I will count redundancies
+int count=0;
+while (ptr!=NULL){
+
+    if (ptr->next!=NULL && ptr->num == ptr->next->num){            
+    count++;
+    }
+ 
+ptr = ptr->next;
+ 
+ }
+ 
+
+return count;
+}
+
